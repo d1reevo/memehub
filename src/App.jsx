@@ -45,8 +45,9 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const appId = firebaseConfig.projectId;
 
-// --- АДМИН ---
-const ADMIN_EMAIL = "chokonarzenya@gmail.com"; 
+// --- СПИСОК АДМИНОВ ---
+// Добавил сюда вторую почту
+const ADMIN_EMAILS = ["chokonarzenya@gmail.com", "d1reevo@gmail.com"]; 
 
 // --- КОМПОНЕНТЫ ---
 
@@ -335,10 +336,11 @@ export default function App() {
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadUrl, setUploadUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false); // Состояние для перетаскивания
+  const [isDragging, setIsDragging] = useState(false); 
   const fileInputRef = useRef(null);
 
-  const isAdmin = user && user.email === ADMIN_EMAIL;
+  // ПРОВЕРКА НА АДМИНА: проверяем, есть ли email пользователя в списке админов
+  const isAdmin = user && ADMIN_EMAILS.includes(user.email);
   const isLoggedIn = user && !user.isAnonymous; 
 
   useEffect(() => { 
@@ -631,11 +633,11 @@ export default function App() {
             )}
         </div>
         <nav className="px-2 space-y-1">
-          <SidebarItem icon={Home} label="Лента" active={view === 'home'} onClick={() => setView('home')} />
-          <SidebarItem icon={TrendingUp} label="Популярное" active={view === 'trending'} onClick={() => setView('trending')} />
+          <SidebarItem icon={Home} label="Лента" active={view === 'home'} onClick={() => { setView('home'); setSidebarOpen(false); }} />
+          <SidebarItem icon={TrendingUp} label="Популярное" active={view === 'trending'} onClick={() => { setView('trending'); setSidebarOpen(false); }} />
           <div className="pt-4 pb-2 px-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Библиотека</div>
-          <SidebarItem icon={User} label="Мои загрузки" active={view === 'my-memes'} onClick={() => isLoggedIn ? setView('my-memes') : setIsAuthModalOpen(true)} count={isLoggedIn ? memes.filter(m => m.uploaderId === user.uid).length : null} />
-          <SidebarItem icon={Heart} label="Понравилось" active={view === 'favorites'} onClick={() => isLoggedIn ? setView('favorites') : setIsAuthModalOpen(true)} count={isLoggedIn ? memes.filter(m => m.likesBy?.includes(user.uid)).length : null} />
+          <SidebarItem icon={User} label="Мои загрузки" active={view === 'my-memes'} onClick={() => { isLoggedIn ? setView('my-memes') : setIsAuthModalOpen(true); setSidebarOpen(false); }} count={isLoggedIn ? memes.filter(m => m.uploaderId === user.uid).length : null} />
+          <SidebarItem icon={Heart} label="Понравилось" active={view === 'favorites'} onClick={() => { isLoggedIn ? setView('favorites') : setIsAuthModalOpen(true); setSidebarOpen(false); }} count={isLoggedIn ? memes.filter(m => m.likesBy?.includes(user.uid)).length : null} />
         </nav>
       </aside>
       <main className="flex-1 flex flex-col h-full bg-[#090909]">
