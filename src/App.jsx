@@ -46,7 +46,7 @@ const db = getFirestore(app);
 const appId = firebaseConfig.projectId;
 
 // --- АДМИН ---
-const ADMIN_EMAIL = "d1reevo@gmail.com"; 
+const ADMIN_EMAIL = "chokonarzenya@gmail.com"; 
 
 // --- КОМПОНЕНТЫ ---
 
