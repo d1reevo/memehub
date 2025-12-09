@@ -46,7 +46,6 @@ const db = getFirestore(app);
 const appId = firebaseConfig.projectId;
 
 // --- СПИСОК АДМИНОВ ---
-// Добавил сюда вторую почту
 const ADMIN_EMAILS = ["chokonarzenya@gmail.com", "d1reevo@gmail.com"]; 
 
 // --- КОМПОНЕНТЫ ---
@@ -339,7 +338,6 @@ export default function App() {
   const [isDragging, setIsDragging] = useState(false); 
   const fileInputRef = useRef(null);
 
-  // ПРОВЕРКА НА АДМИНА: проверяем, есть ли email пользователя в списке админов
   const isAdmin = user && ADMIN_EMAILS.includes(user.email);
   const isLoggedIn = user && !user.isAnonymous; 
 
@@ -452,7 +450,6 @@ export default function App() {
     }
   };
 
-  // --- ЛОГИКА DRAG & DROP ---
   const handleDragOver = (e) => {
       e.preventDefault();
       setIsDragging(true);
@@ -476,7 +473,6 @@ export default function App() {
       }
   };
 
-  // --- ОБНОВЛЕННАЯ ЗАГРУЗКА ---
   const handleUpload = async (e) => {
     e.preventDefault();
     setIsUploading(true);
@@ -557,16 +553,32 @@ export default function App() {
       setView('meme-detail');
   }
 
+  // --- ЛОГИКА ФИЛЬТРАЦИИ И СОРТИРОВКИ ДЛЯ РАЗНЫХ ВКЛАДОК ---
   const filteredMemes = memes.filter(meme => 
     meme.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (meme.tags && meme.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
   );
 
-  const displayMemes = view === 'my-memes' && isLoggedIn
-    ? filteredMemes.filter(m => m.uploaderId === user.uid)
-    : view === 'favorites' && isLoggedIn
-    ? filteredMemes.filter(m => m.likesBy?.includes(user.uid))
-    : filteredMemes;
+  const getDisplayMemes = () => {
+    let memesToShow = filteredMemes;
+
+    // Сортировка для "Популярного" (Trending)
+    if (view === 'trending') {
+      return [...memesToShow].sort((a, b) => (b.likes || 0) - (a.likes || 0));
+    }
+    
+    if (view === 'my-memes' && isLoggedIn) {
+      return memesToShow.filter(m => m.uploaderId === user.uid);
+    }
+    
+    if (view === 'favorites' && isLoggedIn) {
+      return memesToShow.filter(m => m.likesBy?.includes(user.uid));
+    }
+
+    return memesToShow; // Home view
+  };
+
+  const displayMemes = getDisplayMemes();
 
   if (view === 'meme-detail' && activeMeme) {
       const liveMeme = memes.find(m => m.id === activeMeme.id) || activeMeme;
@@ -585,7 +597,7 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-[#090909] text-gray-200 font-sans overflow-hidden">
-      {/* Mobile Sidebar Overlay (Added Fix) */}
+      {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
